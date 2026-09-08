@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Herramientas para la traducción profesional desarrolladas por Cinthia Zapata y Natalia Riera.">
+  <title>Linguatech IA | Recursos para traducción profesional</title>
+  <style>
+    :root {
+      --navy: #3C2170;
+      --blue: #3C2170;
+      --sky: #EDE7F6;
+      --ink: #281d3d;
+      --muted: #5c5073;
+      --line: #d9cde9;
+      --white: #ffffff;
+      --wisteria: #CE93D8;
+      --teal: #73AB84;
+      --aqua: #79C7C5;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: Arial, Helvetica, sans-serif;
+      color: var(--ink);
+      background: linear-gradient(150deg, #fbf8fd 0%, var(--sky) 100%);
+    }
+
+    main {
+      width: min(960px, calc(100% - 40px));
+      margin: 0 auto;
+      padding: 72px 0 48px;
+    }
+
+    .eyebrow {
+      margin: 0 0 14px;
+      color: var(--teal);
+      font-size: 0.82rem;
+      font-weight: 700;
+      letter-spacing: 0.09em;
+      text-transform: uppercase;
+    }
+
+    h1 {
+      max-width: 760px;
+      margin: 0;
+      color: var(--navy);
+      font-size: clamp(2rem, 5vw, 3.25rem);
+      line-height: 1.1;
+    }
+
+    .intro {
+      max-width: 700px;
+      margin: 22px 0 48px;
+      color: var(--muted);
+      font-size: 1.08rem;
+      line-height: 1.65;
+    }
+
+    .tools {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 22px;
+    }
+
+    .card {
+      display: flex;
+      flex-direction: column;
+      min-height: 310px;
+      padding: 28px;
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      background: var(--white);
+      box-shadow: 0 10px 28px rgba(60, 33, 112, 0.10);
+    }
+
+    .tag {
+      display: inline-block;
+      width: fit-content;
+      margin-bottom: 16px;
+      padding: 6px 10px;
+      border-radius: 999px;
+      background: #e0f4f3;
+      color: #266866;
+      font-size: 0.78rem;
+      font-weight: 700;
+    }
+
+    h2 {
+      margin: 0 0 12px;
+      color: var(--navy);
+      font-size: 1.35rem;
+    }
+
+    .card p {
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.55;
+    }
+
+    .card .note {
+      margin-top: 14px;
+      font-size: 0.88rem;
+    }
+
+    .actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: auto;
+      padding-top: 25px;
+    }
+
+    .button {
+      display: inline-block;
+      padding: 11px 15px;
+      border: 1px solid var(--blue);
+      border-radius: 8px;
+      color: var(--white);
+      background: var(--blue);
+      font-weight: 700;
+      text-decoration: none;
+    }
+
+    .button:hover { background: #28164e; }
+
+    .button.secondary {
+      color: var(--blue);
+      background: var(--white);
+    }
+
+    .button.secondary:hover { background: #f5ecf7; }
+
+    .notice {
+      margin-top: 38px;
+      padding: 18px 20px;
+      border-left: 4px solid var(--wisteria);
+      border-radius: 8px;
+      background: var(--white);
+      color: var(--muted);
+      line-height: 1.55;
+    }
+
+    footer {
+      margin-top: 46px;
+      color: var(--muted);
+      font-size: 0.9rem;
+    }
+
+    @media (max-width: 600px) {
+      main { width: min(100% - 32px, 960px); padding-top: 48px; }
+      .card { min-height: auto; }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <p class="eyebrow">Linguatech IA</p>
+    <h1>Herramientas para la traducción profesional</h1>
+    <p class="intro">
+      Recursos de apoyo para preparar textos, diseñar flujos de trabajo y mantener el control profesional en el uso de herramientas de inteligencia artificial.
+    </p>
+
+    <section class="tools" aria-label="Herramientas disponibles">
+      <article class="card">
+        <span class="tag">Preparación del texto</span>
+        <h2>Anonimizador de textos</h2>
+        <p>
+          Detecta localmente fechas, números de identificación o de expediente y montos, y los reemplaza por etiquetas reversibles.
+        </p>
+        <p class="note">
+          La detección automática no reemplaza la revisión humana. Los datos que permanezcan visibles y luego se copien en un LLM podrán ser enviados a ese servicio.
+        </p>
+        <div class="actions">
+          <a class="button" href="Anonimizador_de_texto_Zapata_Riera.html">Usar en el navegador</a>
+          <a class="button secondary" href="Anonimizador_de_texto_Zapata_Riera.html" download>Descargar para uso local</a>
+        </div>
+      </article>
+    </section>
+
+    <aside class="notice">
+      <strong>Uso local:</strong> la herramienta puede utilizarse desde esta página o descargarse y abrirse como archivo HTML en una computadora. La detección automática y la generación del archivo JSON se realizan en el navegador.
+    </aside>
+
+    <footer>
+      Desarrollado por Cinthia Zapata y Natalia Riera.
+    </footer>
+  </main>
+</body>
+</html>
