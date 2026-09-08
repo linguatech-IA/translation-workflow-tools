@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Anonimizador - Elaborado por Cinthia Zapata y Natalia Riera</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: Arial, sans-serif; background: #f9f9f9; color: #1a1a1a; padding: 2rem; max-width: 800px; margin: 0 auto; }
+h1 { font-size: 20px; font-weight: 500; margin-bottom: 1.5rem; }
+.label { font-size: 13px; color: #666; margin-bottom: 6px; display: block; }
+textarea { width: 100%; min-height: 160px; resize: vertical; font-size: 14px; font-family: monospace; padding: 10px; border: 1px solid #ddd; border-radius: 8px; background: #fff; color: #1a1a1a; }
+textarea:focus { outline: none; border-color: #999; }
+.section { margin-bottom: 1.5rem; }
+.btn-row { display: flex; gap: 10px; flex-wrap: wrap; }
+button { font-size: 14px; padding: 8px 18px; cursor: pointer; border-radius: 8px; }
+.btn-primary { background: #EDE7F6; color: #5E35B1; border: 1px solid #B39DDB; }
+.btn-primary:hover { background: #E1D5F5; }
+.btn-secondary { background: transparent; color: #555; border: 1px solid #ccc; }
+.btn-secondary:hover { background: #f0f0f0; }
+.output-box { background: #f4f4f4; border: 1px solid #e0e0e0; border-radius: 8px; padding: 1rem; font-size: 13px; font-family: monospace; white-space: pre-wrap; word-break: break-word; min-height: 80px; color: #1a1a1a; }
+.status { font-size: 13px; color: #666; margin-top: 6px; min-height: 20px; }
+.tabs { display: flex; gap: 0; margin-bottom: 1.5rem; border-bottom: 1px solid #ddd; }
+.tab { font-size: 13px; padding: 8px 16px; cursor: pointer; color: #666; border-bottom: 2px solid transparent; background: transparent; border-top: none; border-left: none; border-right: none; }
+.tab.active { color: #5E35B1; border-bottom: 2px solid #7E57C2; font-weight: 500; }
+.tag { display: inline-block; font-size: 11px; padding: 2px 8px; border-radius: 6px; background: #F3E5F5; color: #6A1B9A; margin-left: 8px; }
+.warning { font-size: 12px; color: #856404; background: #fff3cd; border-radius: 8px; padding: 6px 10px; margin-top: 8px; }
+.divider { border: none; border-top: 1px solid #e0e0e0; margin: 1.5rem 0; }
+.pill-row { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 8px; }
+.pill-row label { font-size: 13px; color: #444; display: flex; align-items: center; gap: 5px; cursor: pointer; }
+.info-content { font-size: 14px; line-height: 1.7; color: #1a1a1a; }
+.info-content p { margin-bottom: 1rem; }
+.info-content strong { font-weight: 500; }
+</style>
+</head>
+<body>
+
+<h1>Anonimizador de textos</h1>
+
+<div class="tabs">
+  <button class="tab active" onclick="switchTab('anon')">Anonimizar</button>
+  <button class="tab" onclick="switchTab('revert')">Revertir</button>
+  <button class="tab" onclick="switchTab('info')">Cómo funciona</button>
+</div>
+
+<div id="tab-anon">
+  <div class="section">
+    <span class="label">Pega el texto a anonimizar</span>
+    <textarea id="input-text" placeholder="Pega aqui el texto con datos sensibles..."></textarea>
+  </div>
+  <div class="section">
+    <span class="label">Que tipo de datos contiene?</span>
+    <div class="pill-row">
+      <label><input type="checkbox" id="chk-personas" checked> Personas</label>
+      <label><input type="checkbox" id="chk-empresas" checked> Empresas / organizaciones</label>
+      <label><input type="checkbox" id="chk-fechas" checked> Fechas</label>
+      <label><input type="checkbox" id="chk-numeros" checked> Numeros / montos</label>
+      <label><input type="checkbox" id="chk-lugares" checked> Lugares</label>
+    </div>
+  </div>
+  <div class="btn-row">
+    <button class="btn-primary" id="btn-anon" onclick="anonimizar()">Generar anonimizacion + JSON</button>
+    <button class="btn-secondary" id="btn-prompt" onclick="copiarPrompt()" disabled style="opacity:0.4;cursor:not-allowed">Copiar prompt</button>
+  </div>
+  <div class="status" id="status-anon"></div>
+  <hr class="divider">
+  <div class="section">
+    <span class="label">Texto anonimizado <span class="tag">listo para traducir</span></span>
+    <div class="output-box" id="out-text">El texto anonimizado aparecera aqui.</div>
+  </div>
+  <div class="section">
+    <span class="label">JSON de revision <span class="tag">guardalo antes de traducir</span></span>
+    <div class="output-box" id="out-json">El JSON aparecera aqui. Guardalo: lo vas a necesitar para revertir la anonimizacion despues de traducir.</div>
+    <div class="warning" id="warn-json" style="display:none">Guarda este JSON antes de cerrar la pagina. Sin el no podras revertir la anonimizacion.</div>
+  </div>
+  <div class="btn-row" id="btns-copy" style="display:none">
+    <button class="btn-secondary" onclick="copiarTexto()">Copiar texto anonimizado</button>
+    <button class="btn-secondary" onclick="copiarJSON()">Copiar JSON</button>
+  </div>
+</div>
+
+<div id="tab-revert" style="display:none">
+  <div class="section">
+    <span class="label">Pegá acá el texto traducido que recibiste del LLM, con todos los placeholders</span>
+    <textarea id="input-traducido" placeholder="Pega aqui el texto ya traducido con los placeholders [PERSONA_A], [EMPRESA_A], etc."></textarea>
+  </div>
+  <div class="section">
+    <span class="label">Pega el JSON de la IA <span style="font-size:11px;color:#888">(opcional si usaste el prompt)</span></span>
+    <textarea id="input-json-rev" placeholder='Opcional: pega aqui el JSON que te devolvio la IA. Si no usaste el prompt, deja este campo vacio — la herramienta usa su propio JSON automaticamente.'></textarea>
+  </div>
+  <div class="btn-row">
+    <button class="btn-primary" onclick="revertir()">Revertir anonimizacion</button>
+  </div>
+  <div class="status" id="status-rev"></div>
+  <hr class="divider">
+  <div class="section">
+    <span class="label">Texto final con datos reales restaurados</span>
+    <div class="output-box" id="out-revert">El texto con los datos originales restaurados aparecera aqui.</div>
+  </div>
+  <div class="btn-row" id="btns-revert" style="display:none">
+    <button class="btn-secondary" onclick="copiarRevert()">Copiar texto final</button>
+  </div>
+</div>
+
+<div id="tab-info" style="display:none">
+  <div class="info-content">
+    <p><strong>¿Para qué sirve esta herramienta?</strong></p>
+    <p>Cuando trabajamos con textos confidenciales, subir el contenido directamente a un LLM implica un riesgo. Esta herramienta resuelve ese problema: antes de que uses el texto en un LLM, como ChatGPT, Claude, Gemini, etc., podés reemplazar los datos sensibles por etiquetas neutras automáticamente. El resultado es un texto que podés procesar sin exponer información del cliente.</p>
+    <p><strong>¿Cómo se usa?</strong></p>
+    <p>El flujo tiene tres pasos. Primero anonimizás el texto y guardás el archivo JSON que se genera. Después trabajás con ese texto en tu CAT tool. Una vez que terminaste, pegás el texto traducido y el JSON en la pestaña “Revertir”, y la herramienta devuelve el documento con todos los datos originales en su lugar.</p>
+    <p><strong>¿Por qué se genera un archivo JSON?</strong></p>
+    <p>Porque necesitamos que la reversión sea exacta. El JSON funciona como un mapa: registra qué dato real corresponde a cada etiqueta y mantiene esa correspondencia a lo largo de todo el texto. Si [PERSONA_A] aparece diez veces, siempre es la misma persona y se restaura correctamente en cada caso.</p>
+    <p><strong>¿Qué detecta automáticamente y qué no?</strong></p>
+    <p>Esta herramienta detecta patrones fijos como fechas, números de documento y montos. Lo que no puede detectar son nombres de personas, empresas, barrios o direcciones porque para eso es necesario entender el significado de las palabras, no solo su forma. Ahí es donde entra en juego la IA.</p>
+    <p><strong>Cómo usar el botón “Copiar prompt”</strong></p>
+    <p>El flujo completo tiene dos pasos. Primero hacé clic en “Generar anonimización + JSON” para que la herramienta detecte lo que puede automáticamente. Si no logra identificar todos los datos sensibles, tenés que hacer clic en “Copiar prompt”, pegarlo en Claude, ChatGPT, Gemini o cualquier LLM que uses, y el modelo va a devolver el texto completamente anonimizado junto con el JSON. Ese JSON es el que tenés que pegar en la pestaña “Revertir” cuando termines de traducir.</p>
+    <p><strong>Flujo completo con LLM</strong></p>
+    <p>Si usás el prompt para que la IA complete la anonimización, el flujo tiene cuatro pasos. Primero genérás la anonimización automática y copiás el prompt. Después pegás el prompt en el LLM y la IA devuelve el texto completamente anonimizado junto con su JSON. Luego trabajás con ese texto en tu CAT tool; ese es el que tenés que traducir, no el que generó la herramienta automáticamente. Finalmente, en la pestaña “Revertir” pegás el texto traducido en el Campo 1 y el JSON de la IA en el Campo 2. La herramienta combina ambos JSONs automáticamente y restaura todos los datos originales.</p>
+    <p><em>Esta herramienta procesa el texto en tu navegador, no en un servidor, por lo tanto, no almacenamos ningún dato.</em></p>
+  </div>
+</div>
+
+<script>
+var counters = {};
+var textoAnonimizadoGlobal = '';
+var jsonInternoGlobal = [];
+
+function getPlaceholder(tipo) {
+  if (!counters[tipo]) counters[tipo] = 0;
+  counters[tipo]++;
+  var letra = String.fromCharCode(64 + counters[tipo]);
+  return '[' + tipo + '_' + letra + ']';
+}
+
+function resetCounters() {
+  counters = {};
+}
+
+function switchTab(tab) {
+  var tabs = ['anon', 'revert', 'info'];
+  for (var i = 0; i < tabs.length; i++) {
+    document.getElementById('tab-' + tabs[i]).style.display = tabs[i] === tab ? 'block' : 'none';
+  }
+  var btns = document.querySelectorAll('.tab');
+  for (var j = 0; j < btns.length; j++) {
+    btns[j].classList.toggle('active', j === tabs.indexOf(tab));
+  }
+}
+
+function anonimizar() {
+  var texto = document.getElementById('input-text').value.trim();
+  if (!texto) { document.getElementById('status-anon').textContent = 'Pega un texto primero.'; return; }
+  resetCounters();
+  var map = [];
+  var resultado = texto;
+
+  var chkFechas = document.getElementById('chk-fechas').checked;
+  var chkNumeros = document.getElementById('chk-numeros').checked;
+
+  if (chkFechas) {
+    var fechaRegex = /\b(\d{1,2}[\/\-\.]\d{1,2}[\/\-\.]\d{2,4}|\d{1,2}\s+de\s+[a-z\u00e1\u00e9\u00ed\u00f3\u00fa\u00fc]+\s+de\s+\d{4}|(?:January|February|March|April|May|June|July|August|September|October|November|December)\s+\d{1,2},?\s+\d{4}|\b\d{1,2}\s+(?:January|February|March|April|May|June|July|August|September|October|November|December)\s+\d{4})/gi;
+    resultado = resultado.replace(fechaRegex, function(match) {
+      var ph = getPlaceholder('FECHA');
+      map.push({ placeholder: ph, original: match });
+      return ph;
+    });
+  }
+
+  if (chkNumeros) {
+    var numDocRegex = /\b(CUIT|DNI|RUT|CUIL|Exp\.?|N\u00b0|N[\u00ba°]|Num\.?|N[\u00fa]mero)\s*[\d\.\/\-]+/gi;
+    resultado = resultado.replace(numDocRegex, function(match) {
+      var ph = getPlaceholder('NUMERO');
+      map.push({ placeholder: ph, original: match });
+      return ph;
+    });
+    var montoRegex = /\b(USD|ARS|EUR|GBP|\u20ac|\$|\u00a3)\s*[\d.,]+|\b[\d.,]+\s*(USD|ARS|EUR|GBP|millones?|mil)\b/g;
+    resultado = resultado.replace(montoRegex, function(match) {
+      var ph = getPlaceholder('MONTO');
+      map.push({ placeholder: ph, original: match });
+      return ph;
+    });
+  }
+
+  textoAnonimizadoGlobal = resultado;
+  jsonInternoGlobal = map;
+  document.getElementById('out-text').textContent = resultado;
+  document.getElementById('out-json').textContent = map.length > 0 ? JSON.stringify(map, null, 2) : '[]  — No se detectaron patrones automaticos. Usa el boton Copiar prompt para anonimizacion completa con IA.';
+  document.getElementById('btns-copy').style.display = 'flex';
+  var btnPrompt = document.getElementById('btn-prompt');
+  btnPrompt.disabled = false;
+  btnPrompt.style.opacity = '1';
+  btnPrompt.style.cursor = 'pointer';
+  document.getElementById('warn-json').style.display = map.length > 0 ? 'block' : 'none';
+  document.getElementById('status-anon').textContent = map.length > 0 ? map.length + ' reemplazos detectados automaticamente. Para personas, empresas y lugares usa Copiar prompt.' : 'Usa el boton Copiar prompt para anonimizacion completa con IA.';
+}
+
+function generarPrompt(texto, p, e, f, n, l) {
+  var tipos = [];
+  if (p) tipos.push('- Nombres de personas: reemplazalos por [PERSONA_A], [PERSONA_B]... Ejemplo: María González se convierte en [PERSONA_A]');
+  if (e) tipos.push('- Nombres de empresas u organizaciones: reemplazalos por [EMPRESA_A], [EMPRESA_B]... Ejemplo: Estudio Jurídico Pérez se convierte en [EMPRESA_A]');
+  if (f) tipos.push('- Fechas específicas: reemplazalas por [FECHA_A], [FECHA_B]... Ejemplo: 2 de febrero de 1999 se convierte en [FECHA_A]');
+  if (n) tipos.push('- Números de documento, DNI, expediente o contrato: reemplazalos por [NUMERO_A]... Montos económicos: reemplazalos por [MONTO_A]...');
+  if (l) tipos.push('- Lugares sensibles como barrios, calles y direcciones completas: reemplazalos por [LUGAR_A], [LUGAR_B]... Ejemplo: Av. Corrientes 1234, Villa Crespo se convierte en [LUGAR_A]');
+
+  var reglas = '\n\nReglas importantes:\n' +
+    '- Usá el mismo placeholder cada vez que aparezca la misma entidad.\n' +
+    '- Si hay duda sobre si un dato es sensible, anonimizalo igual.\n' +
+    '- OBLIGATORIO: al final de tu respuesta debés incluir un archivo JSON con todos los reemplazos.\n' +
+    '- El JSON debe tener EXACTAMENTE este formato, sin variaciones: [{"placeholder":"[PERSONA_A]","original":"valor original"}, ...]\n' +
+    '- El orden de tu respuesta debe ser: 1) texto anonimizado completo, 2) JSON con todos los reemplazos.\n' +
+    '- No incluyas en el JSON entradas donde el original sea igual al placeholder.\n' +
+    '- No agregues explicaciones, títulos ni comentarios extras.';
+
+  var intro = 'Tarea: anonimizar el siguiente texto reemplazando datos sensibles por placeholders reversibles y generar un archivo JSON que permita revertir los cambios después.\n\nDatos a reemplazar:\n';
+  return intro + tipos.join('\n') + reglas + '\n\nTexto a anonimizar:\n' + texto;
+}
+
+function copiarAlPortapapeles(texto, statusId, msg) {
+  try {
+    var ta = document.createElement('textarea');
+    ta.value = texto;
+    ta.setAttribute('readonly', '');
+    ta.style.position = 'fixed';
+    ta.style.left = '-9999px';
+    ta.style.top = '-9999px';
+    document.body.appendChild(ta);
+    ta.focus();
+    ta.setSelectionRange(0, ta.value.length);
+    document.execCommand('copy');
+    document.body.removeChild(ta);
+    document.getElementById(statusId).textContent = msg;
+  } catch(err) {
+    document.getElementById(statusId).textContent = 'No se pudo copiar. Selecciona el texto manualmente.';
+  }
+}
+
+function copiarPrompt() {
+  if (!textoAnonimizadoGlobal) {
+    document.getElementById('status-anon').textContent = 'Primero genera la anonimizacion.';
+    return;
+  }
+  var texto = textoAnonimizadoGlobal;
+  var p = document.getElementById('chk-personas').checked;
+  var e = document.getElementById('chk-empresas').checked;
+  var f = document.getElementById('chk-fechas').checked;
+  var n = document.getElementById('chk-numeros').checked;
+  var l = document.getElementById('chk-lugares').checked;
+  var prompt = generarPrompt(texto, p, e, f, n, l);
+  copiarAlPortapapeles(prompt, 'status-anon', 'Prompt copiado. Pegalo en tu herramienta de IA preferida.');
+}
+
+function copiarTexto() {
+  copiarAlPortapapeles(document.getElementById('out-text').textContent, 'status-anon', 'Texto anonimizado copiado.');
+}
+
+function copiarJSON() {
+  copiarAlPortapapeles(document.getElementById('out-json').textContent, 'status-anon', 'JSON copiado. Guardalo antes de cerrar la pagina.');
+}
+
+function revertir() {
+  var traducido = document.getElementById('input-traducido').value.trim();
+  if (!traducido) { document.getElementById('status-rev').textContent = 'Pega el texto traducido primero.'; return; }
+
+  var jsonRaw = document.getElementById('input-json-rev').value.trim();
+  var mapIA = [];
+  if (jsonRaw) {
+    try { mapIA = JSON.parse(jsonRaw); } catch(err) { document.getElementById('status-rev').textContent = 'El JSON no es valido. Verifica el formato.'; return; }
+  }
+
+  var mapCombinado = jsonInternoGlobal.slice();
+  var placeholdersInternos = mapCombinado.map(function(i) { return i.placeholder; });
+  for (var j = 0; j < mapIA.length; j++) {
+    if (placeholdersInternos.indexOf(mapIA[j].placeholder) === -1) {
+      mapCombinado.push(mapIA[j]);
+    }
+  }
+
+  if (mapCombinado.length === 0) { document.getElementById('status-rev').textContent = 'No hay datos para revertir. Genera la anonimizacion primero o pega el JSON de la IA.'; return; }
+
+  var resultado = traducido;
+  var count = 0;
+  for (var i = 0; i < mapCombinado.length; i++) {
+    var item = mapCombinado[i];
+    if (item.placeholder && item.original) {
+      var escaped = item.placeholder.replace(/[\[\]]/g, '\\$&');
+      var regex = new RegExp(escaped, 'g');
+      var antes = resultado;
+      resultado = resultado.replace(regex, item.original);
+      if (resultado !== antes) count++;
+    }
+  }
+  document.getElementById('out-revert').textContent = resultado;
+  document.getElementById('btns-revert').style.display = 'flex';
+  document.getElementById('status-rev').textContent = count + ' placeholders revertidos correctamente.';
+}
+
+function copiarRevert() {
+  copiarAlPortapapeles(document.getElementById('out-revert').textContent, 'status-rev', 'Texto final copiado.');
+}
+</script>
+
+</body>
+</html>
